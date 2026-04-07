@@ -154,7 +154,7 @@ public class BenchmarkTest {
   @Order(5)
   void bruteForce() {
     int[] sizes = {5, 10, 15, 20, 25, 30};
-    int targetAmount = 10000;
+    int targetAmount = 100000;
 
     System.out.println("\n=== Brute Force Algorithm Test ===");
     System.out.println("\n--- Target Amount: " + targetAmount + " ---");
@@ -203,5 +203,120 @@ public class BenchmarkTest {
     int resultCount = (result != null) ? result.size() : 0;
 
     return new BenchmarkResultBruteForce(executionTime, Math.max(0, memoryUsed), resultCount);
+  }
+
+  @Test
+  @Order(6)
+  void bitSet10000() {
+    int[] sizes = {5, 10, 15, 20, 25, 30};
+    int targetAmount = 10000;
+
+    System.out.println("\n=== DP with BitSet Algorithm Test ===");
+    System.out.println("\n--- Target Amount: " + targetAmount + " ---");
+    System.out.printf("%-5s | %-15s | %-15s | %-15s%n", "n", "Execution(ms)", "Memory(MB)",
+        "Count");
+    System.out.println("------+-----------------+-----------------+------------------");
+
+    for (int n : sizes) {
+      BenchmarkResultBitSet result = runBenchmarkBitSet(n, targetAmount);
+      System.out.printf("%-5d | %-15.3f | %-15.2f | %-15d%n", n, result.executionTime,
+          result.memoryUsed, result.resultCount);
+
+      assertNotNull(result);
+    }
+  }
+
+  @Test
+  @Order(7)
+  void bitSet100000() {
+    int[] sizes = {5, 10, 15, 20, 25, 30};
+    int targetAmount = 100000;
+
+    System.out.println("\n--- Target Amount: " + targetAmount + " ---");
+    System.out.printf("%-5s | %-15s | %-15s | %-15s%n", "n", "Execution(ms)", "Memory(MB)",
+        "Count");
+    System.out.println("------+-----------------+-----------------+------------------");
+
+    for (int n : sizes) {
+      BenchmarkResultBitSet result = runBenchmarkBitSet(n, targetAmount);
+      System.out.printf("%-5d | %-15.3f | %-15.2f | %-15d%n", n, result.executionTime,
+          result.memoryUsed, result.resultCount);
+
+      assertNotNull(result);
+    }
+  }
+
+  @Test
+  @Order(8)
+  void bitSet1000000() {
+    int[] sizes = {5, 10, 15, 20, 25, 30};
+    int targetAmount = 1000000;
+
+    System.out.println("\n--- Target Amount: " + targetAmount + " ---");
+    System.out.printf("%-5s | %-15s | %-15s | %-15s%n", "n", "Execution(ms)", "Memory(MB)",
+        "Count");
+    System.out.println("------+-----------------+-----------------+------------------");
+
+    for (int n : sizes) {
+      BenchmarkResultBitSet result = runBenchmarkBitSet(n, targetAmount);
+      System.out.printf("%-5d | %-15.3f | %-15.2f | %-15d%n", n, result.executionTime,
+          result.memoryUsed, result.resultCount);
+
+      assertNotNull(result);
+    }
+  }
+
+  @Test
+  @Order(9)
+  void bitSet2000000() {
+    int[] sizes = {5, 10, 15, 20, 25, 30};
+    int targetAmount = 2000000;
+
+    System.out.println("\n--- Target Amount: " + targetAmount + " ---");
+    System.out.printf("%-5s | %-15s | %-15s | %-15s%n", "n", "Execution(ms)", "Memory(MB)",
+        "Count");
+    System.out.println("------+-----------------+-----------------+------------------");
+
+    for (int n : sizes) {
+      BenchmarkResultBitSet result = runBenchmarkBitSet(n, targetAmount);
+      System.out.printf("%-5d | %-15.3f | %-15.2f | %-15d%n", n, result.executionTime,
+          result.memoryUsed, result.resultCount);
+
+      assertNotNull(result);
+    }
+  }
+
+  static class BenchmarkResultBitSet {
+    double executionTime; // ミリ秒
+    double memoryUsed; // MB
+    int resultCount; // 結果の件数
+
+    BenchmarkResultBitSet(double executionTime, double memoryUsed, int resultCount) {
+      this.executionTime = executionTime;
+      this.memoryUsed = memoryUsed;
+      this.resultCount = resultCount;
+    }
+  }
+
+  static BenchmarkResultBitSet runBenchmarkBitSet(int n, int targetAmount) {
+    // 取引データを生成
+    List<@NonNull TransactionData> transactions = generateTransactions(n);
+
+    // ガベージコレクションを実行
+    System.gc();
+    long memoryBeforeL = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+
+    // 実行時間を計測
+    long startTime = System.nanoTime();
+    List<TransactionData> result = Searcher.findSubsetSumWithBitSet(transactions, targetAmount);
+    long endTime = System.nanoTime();
+
+    long memoryAfterL = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+    double memoryUsed = (memoryAfterL - memoryBeforeL) / (1024.0 * 1024.0);
+
+    double executionTime = (endTime - startTime) / 1_000_000.0; // ナノ秒からミリ秒へ変換
+    int resultCount = (result != null) ? result.size() : 0;
+
+    return new BenchmarkResultBitSet(executionTime, Math.max(0, memoryUsed), resultCount);
   }
 }

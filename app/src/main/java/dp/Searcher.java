@@ -1,6 +1,7 @@
 package dp;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 
 public class Searcher {
@@ -112,5 +113,69 @@ public class Searcher {
 
     // 選択肢2: 現在の要素を選ばない場合
     return findSubsetSumRecursive(transactions, targetAmount, index + 1, currentSum, current);
+  }
+
+  /**
+   * BitSetを使用して部分集合和問題を解く（メモリ効率的） boolean[][]の代わりにBitSetを使用することでメモリ使用量を大幅に削減 時間計算量: O(n ×
+   * targetAmount), 空間計算量: O(n × targetAmount / 8)
+   *
+   * @param transactions 取引データのリスト
+   * @param targetAmount 目標金額
+   * @return 目標金額に合致する取引のリスト、見つからない場合はnull
+   */
+  public static List<TransactionData> findSubsetSumWithBitSet(List<TransactionData> transactions,
+      int targetAmount) {
+    int n = transactions.size();
+
+    // BitSetを使用したDPテーブル: 各行が一つのBitSetで、i番目までの要素で金額jを作れるか
+    BitSet[] dp = new BitSet[n + 1];
+    // 選択テーブル: ビットが立っている＝その要素を選んだ
+    BitSet[] selected = new BitSet[n + 1];
+
+    for (int i = 0; i <= n; i++) {
+      dp[i] = new BitSet(targetAmount + 1);
+      selected[i] = new BitSet(targetAmount + 1);
+    }
+
+    // ベースケース: 金額0は常に作成可能（何も選ばない）
+    dp[0].set(0);
+
+    // DPテーブルを埋める
+    for (int i = 1; i <= n; i++) {
+      int amount = transactions.get(i - 1).amount;
+
+      // 前の行をコピー（選ばない場合）
+      dp[i].or(dp[i - 1]);
+
+      // 選ぶ場合の処理: dp[i-1]のすべて立っているビットに対して、
+      // amount分だけ左にシフトした位置に立てる
+      for (int j = dp[i - 1].nextSetBit(0); j >= 0 && j <= targetAmount; j =
+          dp[i - 1].nextSetBit(j + 1)) {
+        if (j + amount <= targetAmount) {
+          dp[i].set(j + amount);
+          selected[i].set(j + amount);
+        }
+      }
+    }
+
+    // 目標金額に到達できなかった場合
+    if (!dp[n].get(targetAmount)) {
+      return null;
+    }
+
+    // 復元処理: どの要素を選んだかを遡って確認
+    List<TransactionData> result = new ArrayList<>();
+    int sum = targetAmount;
+
+    // 逆向きに復元
+    for (int i = n; i > 0; i--) {
+      if (selected[i].get(sum)) {
+        TransactionData tx = transactions.get(i - 1);
+        result.add(tx);
+        sum -= tx.amount;
+      }
+    }
+
+    return result;
   }
 }
